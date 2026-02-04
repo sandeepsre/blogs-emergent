@@ -51,7 +51,7 @@ class ApiClient {
   }
 
   private async uploadRequest(endpoint: string, formData: FormData) {
-    const headers: HeadersInit = {};
+    const headers: Record<string, string> = {};
 
     if (this.token) {
       headers['Authorization'] = `Bearer ${this.token}`;
