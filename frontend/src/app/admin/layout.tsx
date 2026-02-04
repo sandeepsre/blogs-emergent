@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
@@ -9,13 +9,22 @@ import { LayoutDashboard, FileText, FolderOpen, Tag, MessageSquare, Mail, LogOut
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, loading, logout } = useAuth();
+  
+  // Don't protect the login page
+  const isLoginPage = pathname === '/admin/login';
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && !isLoginPage) {
       router.push('/admin/login');
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, isLoginPage]);
+
+  // If it's the login page, just render children without layout
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (
