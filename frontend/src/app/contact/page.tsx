@@ -52,7 +52,7 @@ export default function ContactPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">Get in Touch</h1>
-            <p className="text-xl text-gray-600">Have a question or feedback? We'd love to hear from you!</p>
+            <p className="text-xl text-gray-600">Have a question or feedback? We&apos;d love to hear from you!</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
