@@ -60,7 +60,7 @@ export default function ContactPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Send us a Message</CardTitle>
-                <CardDescription>Fill out the form below and we'll get back to you soon.</CardDescription>
+                <CardDescription>Fill out the form below and we&apos;ll get back to you soon.</CardDescription>
               </CardHeader>
               <CardContent>
                 {message && (
