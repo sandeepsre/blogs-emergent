@@ -10,20 +10,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "typescript": "^5.9.3",
     "@types/node": "^20.11.0",
-    "@types/react": "19",
-    "@types/react-dom": "19",
     "autoprefixer": "^10.4.17",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "lucide-react": "^0.344.0",
-    "next": "16",
     "postcss": "^8.4.33",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
     "tailwind-merge": "^2.2.1",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5.9.3"
+    "tailwindcss": "^3.4.1"
   },
   "devDependencies": {
     "@types/node": "^20",
