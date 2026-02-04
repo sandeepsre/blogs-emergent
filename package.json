@@ -4,7 +4,7 @@
   "description": "Full-stack CMS with Next.js 16, TypeScript, Express, and MySQL",
   "scripts": {
     "install:all": "cd frontend && yarn install && cd ../backend && yarn install",
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev": "concurrently \"PORT=3000 npm run dev:frontend\" \"PORT=5000 npm run dev:backend\"",
     "dev:frontend": "cd frontend && yarn dev",
     "dev:backend": "cd backend && yarn dev",
     "build": "cd frontend && yarn build",
