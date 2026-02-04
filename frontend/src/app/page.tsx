@@ -17,6 +17,7 @@ export default function HomePage() {
 
   useEffect(() => {
     loadBlogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   const loadBlogs = async () => {
