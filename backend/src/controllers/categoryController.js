@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import db from '../config/database.js';
 import { generateSlug } from '../utils/helpers.js';
 
