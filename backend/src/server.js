@@ -12,6 +12,9 @@ import commentRoutes from './routes/comments.js';
 import contactRoutes from './routes/contacts.js';
 import dashboardRoutes from './routes/dashboard.js';
 
+import { swaggerSpec } from './config/swagger.js';
+import swaggerUi from 'swagger-ui-express';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -24,14 +27,23 @@ const PORT = process.env.BACKEND_PORT || process.env.PORT || 5000;
 app.use(cors({
   origin: (origin, callback) => {
     const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
-    // Allow if origin is undefined (e.g. server-to-server or postman)
-    if (!origin) return callback(null, true);
+    const backendUrl = `http://localhost:${PORT}`; // Allow self-origin for Swagger UI
+
+    // Allow if origin is undefined (e.g. server-to-server or postman) or null (some local scenarios)
+    if (!origin || origin === 'null') return callback(null, true);
 
     // Check if origin matches allowed origin (handling potential missing protocol in env var)
-    if (origin === allowedOrigin || origin === `https://${allowedOrigin}` || origin === `http://${allowedOrigin}`) {
+    // Also allow requests from the backend URL itself (for Swagger UI)
+    if (
+      origin === allowedOrigin ||
+      origin === `https://${allowedOrigin}` ||
+      origin === `http://${allowedOrigin}` ||
+      origin === backendUrl ||
+      origin === `http://localhost:${PORT}`
+    ) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error(`Not allowed by CORS: ${origin}`));
     }
   },
   credentials: true
@@ -41,6 +53,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve uploads folder
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // API Routes
 app.use('/api/auth', authRoutes);
