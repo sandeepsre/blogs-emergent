@@ -1,5 +1,6 @@
 import db from '../config/database.js';
 import { generateSlug } from '../utils/helpers.js';
+import crypto from 'crypto';
 
 export const getAllCategories = async (req, res) => {
   try {

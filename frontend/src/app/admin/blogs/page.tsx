@@ -37,6 +37,9 @@ export default function BlogsPage() {
         apiClient.getCategories(),
         apiClient.getTags()
       ]);
+      console.log(blogsRes);
+      console.log(catsRes);
+      console.log(tagsRes);
       setBlogs(blogsRes.blogs);
       setCategories(catsRes);
       setTags(tagsRes);

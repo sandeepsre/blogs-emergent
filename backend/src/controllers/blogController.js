@@ -1,5 +1,25 @@
 import db from '../config/database.js';
 import { generateSlug, paginate } from '../utils/helpers.js';
+import crypto from 'crypto';
+
+class TagValidationError extends Error {}
+
+const ensureTagsExist = async (tagIds) => {
+  const uniqueTagIds = Array.from(new Set(tagIds)).filter(Boolean);
+  if (uniqueTagIds.length === 0) {
+    return [];
+  }
+
+  const placeholders = uniqueTagIds.map(() => '?').join(', ');
+  const [rows] = await db.execute(`SELECT id FROM tags WHERE id IN (${placeholders})`, uniqueTagIds);
+  const foundIds = rows.map((row) => row.id);
+
+  if (foundIds.length !== uniqueTagIds.length) {
+    throw new TagValidationError('One or more tags do not exist');
+  }
+
+  return foundIds;
+};
 
 export const getAllBlogs = async (req, res) => {
   try {
@@ -26,8 +46,9 @@ export const getAllBlogs = async (req, res) => {
       params.push(category);
     }
 
-    query += ' ORDER BY b.created_at DESC LIMIT ? OFFSET ?';
-    params.push(queryLimit, offset);
+    const limitValue = Number.isFinite(queryLimit) ? queryLimit : 10;
+    const offsetValue = Number.isFinite(offset) ? offset : 0;
+    query += ` ORDER BY b.created_at DESC LIMIT ${limitValue} OFFSET ${offsetValue}`;
 
     const [blogs] = await db.execute(query, params);
 
@@ -134,9 +155,9 @@ export const createBlog = async (req, res) => {
       [blogId, title, slug, content, excerpt, featured_image, category_id || null, status, req.user.id, published_at]
     );
 
-    // Add tags
-    if (tags.length > 0) {
-      for (const tagId of tags) {
+    const validTagIds = await ensureTagsExist(tags);
+    if (validTagIds.length > 0) {
+      for (const tagId of validTagIds) {
         await db.execute(
           'INSERT INTO blog_tags (blog_id, tag_id) VALUES (?, ?)',
           [blogId, tagId]
@@ -149,6 +170,9 @@ export const createBlog = async (req, res) => {
     console.error('Create blog error:', error);
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({ error: 'A blog with this title already exists' });
+    }
+    if (error instanceof TagValidationError) {
+      return res.status(400).json({ error: error.message });
     }
     res.status(500).json({ error: 'Failed to create blog' });
   }
@@ -207,10 +231,11 @@ export const updateBlog = async (req, res) => {
       );
     }
 
-    // Update tags
-    if (tags.length >= 0) {
-      await db.execute('DELETE FROM blog_tags WHERE blog_id = ?', [id]);
-      for (const tagId of tags) {
+    const validTagIds = await ensureTagsExist(tags);
+
+    await db.execute('DELETE FROM blog_tags WHERE blog_id = ?', [id]);
+    if (validTagIds.length > 0) {
+      for (const tagId of validTagIds) {
         await db.execute(
           'INSERT INTO blog_tags (blog_id, tag_id) VALUES (?, ?)',
           [id, tagId]
@@ -221,6 +246,9 @@ export const updateBlog = async (req, res) => {
     res.json({ message: 'Blog updated successfully' });
   } catch (error) {
     console.error('Update blog error:', error);
+    if (error instanceof TagValidationError) {
+      return res.status(400).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to update blog' });
   }
 };
