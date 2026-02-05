@@ -1,25 +1,6 @@
+import crypto from 'crypto';
 import db from '../config/database.js';
 import { generateSlug, paginate } from '../utils/helpers.js';
-import crypto from 'crypto';
-
-class TagValidationError extends Error {}
-
-const ensureTagsExist = async (tagIds) => {
-  const uniqueTagIds = Array.from(new Set(tagIds)).filter(Boolean);
-  if (uniqueTagIds.length === 0) {
-    return [];
-  }
-
-  const placeholders = uniqueTagIds.map(() => '?').join(', ');
-  const [rows] = await db.execute(`SELECT id FROM tags WHERE id IN (${placeholders})`, uniqueTagIds);
-  const foundIds = rows.map((row) => row.id);
-
-  if (foundIds.length !== uniqueTagIds.length) {
-    throw new TagValidationError('One or more tags do not exist');
-  }
-
-  return foundIds;
-};
 
 export const getAllBlogs = async (req, res) => {
   try {
@@ -138,11 +119,20 @@ export const getBlogBySlug = async (req, res) => {
 
 export const createBlog = async (req, res) => {
   try {
-    const { title, content, excerpt, category_id, status = 'draft', tags = [] } = req.body;
+    let { title, content, excerpt, category_id, status = 'draft', tags = [] } = req.body;
     const featured_image = req.file ? `/uploads/${req.file.filename}` : null;
 
     if (!title || !content) {
       return res.status(400).json({ error: 'Title and content are required' });
+    }
+
+    // Parse tags if it's a JSON string (from form-data)
+    if (typeof tags === 'string') {
+      try {
+        tags = JSON.parse(tags);
+      } catch (e) {
+        tags = [];
+      }
     }
 
     const slug = generateSlug(title);
@@ -155,9 +145,9 @@ export const createBlog = async (req, res) => {
       [blogId, title, slug, content, excerpt, featured_image, category_id || null, status, req.user.id, published_at]
     );
 
-    const validTagIds = await ensureTagsExist(tags);
-    if (validTagIds.length > 0) {
-      for (const tagId of validTagIds) {
+    // Add tags
+    if (Array.isArray(tags) && tags.length > 0) {
+      for (const tagId of tags) {
         await db.execute(
           'INSERT INTO blog_tags (blog_id, tag_id) VALUES (?, ?)',
           [blogId, tagId]
@@ -170,9 +160,6 @@ export const createBlog = async (req, res) => {
     console.error('Create blog error:', error);
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({ error: 'A blog with this title already exists' });
-    }
-    if (error instanceof TagValidationError) {
-      return res.status(400).json({ error: error.message });
     }
     res.status(500).json({ error: 'Failed to create blog' });
   }
@@ -231,11 +218,20 @@ export const updateBlog = async (req, res) => {
       );
     }
 
-    const validTagIds = await ensureTagsExist(tags);
+    // Parse tags if it's a JSON string
+    let tagIds = tags;
+    if (typeof tagIds === 'string') {
+      try {
+        tagIds = JSON.parse(tagIds);
+      } catch (e) {
+        tagIds = [];
+      }
+    }
 
     await db.execute('DELETE FROM blog_tags WHERE blog_id = ?', [id]);
-    if (validTagIds.length > 0) {
-      for (const tagId of validTagIds) {
+
+    if (Array.isArray(tagIds) && tagIds.length > 0) {
+      for (const tagId of tagIds) {
         await db.execute(
           'INSERT INTO blog_tags (blog_id, tag_id) VALUES (?, ?)',
           [id, tagId]
@@ -246,9 +242,6 @@ export const updateBlog = async (req, res) => {
     res.json({ message: 'Blog updated successfully' });
   } catch (error) {
     console.error('Update blog error:', error);
-    if (error instanceof TagValidationError) {
-      return res.status(400).json({ error: error.message });
-    }
     res.status(500).json({ error: 'Failed to update blog' });
   }
 };

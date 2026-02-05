@@ -1,0 +1,60 @@
+services:
+  # Backend Service
+  - type: web
+    name: emergent-blog-backend
+    runtime: node
+    region: oregon
+    buildCommand: cd backend && yarn install
+    startCommand: cd backend && yarn start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+      - key: DB_HOST
+        fromDatabase:
+          name: emergent-blog-db
+          property: host
+      - key: DB_USER
+        fromDatabase:
+          name: emergent-blog-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: emergent-blog-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: emergent-blog-db
+          property: database
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: emergent-blog-frontend
+          property: url
+
+  # Frontend Service
+  - type: web
+    name: emergent-blog-frontend
+    runtime: node
+    region: oregon
+    buildCommand: cd frontend && yarn install && yarn build
+    startCommand: cd frontend && yarn start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: emergent-blog-backend
+          property: url
+
+databases:
+  # MySQL Database
+  - name: emergent-blog-db
+    databaseName: cms_db
+    user: emergent_user
+    region: oregon
+    plan: free # Try free tier first if available, otherwise 'starter'

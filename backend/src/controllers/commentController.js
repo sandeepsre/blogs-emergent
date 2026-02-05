@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import db from '../config/database.js';
 
 export const getAllComments = async (req, res) => {
