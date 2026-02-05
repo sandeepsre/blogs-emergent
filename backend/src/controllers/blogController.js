@@ -119,11 +119,20 @@ export const getBlogBySlug = async (req, res) => {
 
 export const createBlog = async (req, res) => {
   try {
-    const { title, content, excerpt, category_id, status = 'draft', tags = [] } = req.body;
+    let { title, content, excerpt, category_id, status = 'draft', tags = [] } = req.body;
     const featured_image = req.file ? `/uploads/${req.file.filename}` : null;
 
     if (!title || !content) {
       return res.status(400).json({ error: 'Title and content are required' });
+    }
+
+    // Parse tags if it's a JSON string (from form-data)
+    if (typeof tags === 'string') {
+      try {
+        tags = JSON.parse(tags);
+      } catch (e) {
+        tags = [];
+      }
     }
 
     const slug = generateSlug(title);
@@ -137,7 +146,7 @@ export const createBlog = async (req, res) => {
     );
 
     // Add tags
-    if (tags.length > 0) {
+    if (Array.isArray(tags) && tags.length > 0) {
       for (const tagId of tags) {
         await db.execute(
           'INSERT INTO blog_tags (blog_id, tag_id) VALUES (?, ?)',
