@@ -18,7 +18,7 @@ export const login = async (req, res) => {
        WHERE u.email = ?`,
       [email]
     );
-
+    console.log(users);
     if (users.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
