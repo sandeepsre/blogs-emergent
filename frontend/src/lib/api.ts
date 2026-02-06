@@ -1,4 +1,16 @@
+<<<<<<< HEAD
 const API_URL = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? `${window.location.origin}/api` : '/api');
+=======
+const getApiUrl = () => {
+  let url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  if (!url.startsWith('http')) {
+    url = `https://${url}`;
+  }
+  return url;
+};
+
+const API_URL = getApiUrl();
+>>>>>>> 38bd5cfb4e1f65358c726a0abb3f854c5de7c9f5
 
 class ApiClient {
   private baseUrl: string;

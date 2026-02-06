@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "Full-stack CMS with Next.js 16, TypeScript, Express, and MySQL",
   "scripts": {
-    "install:all": "cd frontend && yarn install && cd ../backend && yarn install",
+    "install:all": "cd frontend && npm install && cd ../backend && npm install",
     "dev": "concurrently \"PORT=3000 npm run dev:frontend\" \"PORT=5000 npm run dev:backend\"",
-    "dev:frontend": "cd frontend && yarn dev",
-    "dev:backend": "cd backend && yarn dev",
-    "build": "cd frontend && yarn build",
-    "start:frontend": "cd frontend && yarn start",
-    "start:backend": "cd backend && yarn start"
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start:frontend": "cd frontend && npm start",
+    "start:backend": "cd backend && npm start"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

@@ -27,8 +27,9 @@ export const getAllBlogs = async (req, res) => {
       params.push(category);
     }
 
-    query += ' ORDER BY b.created_at DESC LIMIT ? OFFSET ?';
-    params.push(queryLimit, offset);
+    const limitValue = Number.isFinite(queryLimit) ? queryLimit : 10;
+    const offsetValue = Number.isFinite(offset) ? offset : 0;
+    query += ` ORDER BY b.created_at DESC LIMIT ${limitValue} OFFSET ${offsetValue}`;
 
     const [blogs] = await db.execute(query, params);
 
@@ -217,10 +218,20 @@ export const updateBlog = async (req, res) => {
       );
     }
 
-    // Update tags
-    if (tags.length >= 0) {
-      await db.execute('DELETE FROM blog_tags WHERE blog_id = ?', [id]);
-      for (const tagId of tags) {
+    // Parse tags if it's a JSON string
+    let tagIds = tags;
+    if (typeof tagIds === 'string') {
+      try {
+        tagIds = JSON.parse(tagIds);
+      } catch (e) {
+        tagIds = [];
+      }
+    }
+
+    await db.execute('DELETE FROM blog_tags WHERE blog_id = ?', [id]);
+
+    if (Array.isArray(tagIds) && tagIds.length > 0) {
+      for (const tagId of tagIds) {
         await db.execute(
           'INSERT INTO blog_tags (blog_id, tag_id) VALUES (?, ?)',
           [id, tagId]

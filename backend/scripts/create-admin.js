@@ -1,5 +1,6 @@
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { config } from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -11,7 +12,7 @@ config({ path: join(__dirname, '../.env') });
 
 const createAdmin = async () => {
   let connection;
-  
+
   try {
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
