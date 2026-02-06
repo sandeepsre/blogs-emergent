@@ -12,9 +12,6 @@ import commentRoutes from './routes/comments.js';
 import contactRoutes from './routes/contacts.js';
 import dashboardRoutes from './routes/dashboard.js';
 
-import { swaggerSpec } from './config/swagger.js';
-import swaggerUi from 'swagger-ui-express';
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
